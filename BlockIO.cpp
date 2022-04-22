@@ -14,6 +14,7 @@ namespace ECE141 {
 Block::Block(BlockType aType):header(aType) {}
 
 Block::Block(const Block &aCopy) {
+    std::cout<<"I am called"<<std::endl;
     *this = aCopy;
 }
 
@@ -44,6 +45,7 @@ BlockIO::BlockIO(std::iostream &aStream) : stream(aStream) {}
 StatusResult BlockIO::writeBlock(uint32_t aBlockNum, Block &aBlock) {
 	
         stream.seekp(aBlockNum*kBlockSize,std::ios::beg);
+       // std::cout<<stream.tellp()<<std::endl;
         stream.write(reinterpret_cast<char*>(&aBlock), kBlockSize);
         stream.flush();
         return StatusResult{Errors::noError};

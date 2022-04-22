@@ -211,13 +211,21 @@ namespace ECE141 {
     switch (theStatement->getType()){
       
       case Keywords::create_kw:{
-
+        
+        std::string theTableName = theStatement->getTableName();
         Entity* theEntity = new Entity(theStatement->getTableName());
         std::vector<Attribute> theAttr = theStatement->getAttributevector();
         for(size_t i = 0; i<theAttr.size();i++){
           theEntity->addAttribute(theAttr.at(i));
         }
-        createTable(theEntity);
+        StatusResult theStatus = createTable(theEntity);
+        if(theStatus){
+          uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount()-1;
+          (*currentActiveDbPtr)->setEntityMap(theTableName,theBlockNum);
+          uint32_t theEntityId = (*currentActiveDbPtr)->getEntityId()+1;
+          (*currentActiveDbPtr)->setEntityId(theEntityId);
+
+        }
         delete theEntity;
         break;
       }
@@ -255,6 +263,7 @@ namespace ECE141 {
     (*currentActiveDbPtr)->getStorage().writeBlock(theBlockNum,theConvertedBlock);
     uint32_t theNewBlockCount = theBlockNum+1; // new block count will old + 1
     (*currentActiveDbPtr)->setBlockCount(theNewBlockCount);
+    (*currentActiveDbPtr)->setChange(true);
     output << "Query OK, 1 row affected";
     output <<" ("<<Config::getTimer().elapsed()<<" sec)"<<std::endl;
     return StatusResult(Errors::noError);
@@ -263,9 +272,11 @@ namespace ECE141 {
   StatusResult  SQLProcessor::describeTable(const std::string &aName){
 
     // need to write code for decoding
-    uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
+    //uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
     Block theDescribeBlock;
-    (*currentActiveDbPtr)->getStorage().getTableByName(theBlockNum,aName,theDescribeBlock);
+    uint32_t theBlockNum =  (*currentActiveDbPtr)->getEntityFromMap(aName);
+   // (*currentActiveDbPtr)->getStorage().getTableByName(theBlockNum,aName,theDescribeBlock);
+    (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum,theDescribeBlock);
     if(theDescribeBlock.header.theTitle==aName){
       // decode the block
       Entity* theEntity = new Entity(aName);
@@ -279,10 +290,17 @@ namespace ECE141 {
   }
 
   StatusResult  SQLProcessor::dropTable(const std::string &aName){
-    uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
-    size_t theCount = 0;
-		StatusResult theStatus = (*currentActiveDbPtr)->getStorage().freeBlocks(aName,theBlockNum,theCount);
+
+    if(!(*currentActiveDbPtr)->checkEntityInMap(aName)){
+      return StatusResult(Errors::unknownTable);
+    }
+    uint32_t theBlockNum = (*currentActiveDbPtr)->getEntityFromMap(aName);
+
+		StatusResult theStatus = (*currentActiveDbPtr)->getStorage().freeBlocks(aName,theBlockNum);
+
     if(theStatus){
+      (*currentActiveDbPtr)->setChange(true);
+      (*currentActiveDbPtr)->removeEntityFromMap(aName);
       output<<"Query OK, 1 rows affected ("<<Config::getTimer().elapsed()<<" sec)"<<"\n";
       
     }
@@ -295,15 +313,18 @@ namespace ECE141 {
     std::stringstream ss;
     ss<<"Tables_in_"<<(*currentActiveDbPtr)->getDbName();
     theTableVector.push_back(ss.str());
-    uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
-    (*currentActiveDbPtr)->getStorage().getTables(theBlockNum,theTableVector);
+   // uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
+   // (*currentActiveDbPtr)->getStorage().getTables(theBlockNum,theTableVector);
+   for(auto const& imap: (*currentActiveDbPtr)->getIdxMap()){
+      theTableVector.push_back(imap.first);
+   }
     size_t theLongestString = 0;
     for(size_t i = 0; i<theTableVector.size();i++){
       theLongestString = std::max(theLongestString,theTableVector.at(i).length());
     }
     SQLProcessor::SQLMessageHandler.showTableView(output,theTableVector,theLongestString);
 
-    std::stringstream theMessage;
+    //std::stringstream theMessage;
     //theMessage<<theTableVector.size()-1<<" rows in set"; // Atul changed
     output<<theTableVector.size()-1<<" rows in set ("<<Config::getTimer().elapsed()<<" sec.)"<<"\n";
     //std::string theMsg = std::string(theMessage.str());

@@ -15,7 +15,7 @@
 #include <optional>
 #include <stack>
 #include <string>
-
+#include <map>
 #include "BlockIO.hpp"
 #include "Errors.hpp"
 
@@ -35,9 +35,11 @@ class Storable {
 class Storage : public BlockIO {
    public:
     Storage(std::iostream &aStream);
-    StatusResult freeBlocks(const std::string &aName,uint32_t &aBlockCount,size_t &aCount);
+    StatusResult freeBlocks(const std::string &aName,uint32_t &aBlockCount);
     StatusResult getTables(uint32_t &aBlockCount,std::vector<std::string>& TableVec);
     StatusResult getTableByName(uint32_t &aBlockCount,const std::string &aName,Block &aBlock);
+    Block encodeMetaBlock(std::map<std::string,uint32_t>& anIdxMap, uint32_t &anEntityId);
+    StatusResult decodeMetaBlock(std::map<std::string,uint32_t>& anIdxMap, uint32_t &anEntityId);
 };
 
 }  // namespace ECE141

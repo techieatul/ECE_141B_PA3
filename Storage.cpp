@@ -21,22 +21,12 @@ namespace ECE141 {
 // storage class?
 Storage::Storage(std::iostream &aStream) : BlockIO(aStream) {}
 
-StatusResult Storage::freeBlocks(const std::string &aName,uint32_t &aBlockCount,size_t &aCount){
+StatusResult Storage::freeBlocks(const std::string &aName,uint32_t &aBlockNum){
     Block theBlock;
-    for(size_t i = 0; i<aBlockCount;i++){
-        BlockIO::readBlock(i,theBlock);
-        if(theBlock.header.theTitle == aName){
-            aCount++;
-            theBlock.header.type = 'F';
-            BlockIO::writeBlock(i,theBlock);
-            //writeBlock(theBlock);
-           // memset(theBlock.payload,0,kPayloadSize);
-        }
-    }
-    if(aCount==0){
-        return StatusResult(Errors::unknownTable);
-    }
-    return StatusResult(Errors::noError);
+    this->readBlock(aBlockNum,theBlock);
+    theBlock.header.type = 'F';
+    
+    return this->writeBlock(aBlockNum,theBlock);
 }
 
 StatusResult Storage::getTables(uint32_t &aBlockCount,std::vector<std::string>& TableVec){
@@ -61,6 +51,56 @@ StatusResult Storage::getTableByName(uint32_t &aBlockCount,const std::string &aN
     }
 
     return StatusResult(Errors::unknownTable);
+}
+
+
+Block Storage::encodeMetaBlock(std::map<std::string,uint32_t> &anIdxMap, uint32_t &anEntityId){
+    // Encode meta block
+    Block aBlock;
+    stream.seekg(0,std::ios::beg);
+    stream.read(reinterpret_cast<char*>(&aBlock), kBlockSize);
+    aBlock.header.theEntityId = anEntityId;
+    std::stringstream ss;
+
+    ss<<"EntityMap:" <<" ";
+    
+    // Store key-val
+    for (auto const& [key, val] : anIdxMap){
+        ss<<"#"<<" "<<key<<" "<<" "<<val<<" "<<"#"<<"\n";
+    }
+    ss<<"END"<<"\n";
+    ss.read(aBlock.payload,kPayloadSize);
+
+    return aBlock;
+
+}
+
+// USE: Decode the metablock to populate Entity Map and Entityid
+StatusResult Storage::decodeMetaBlock(std::map<std::string,uint32_t>& anIdxMap, uint32_t &anEntityId){
+
+    
+    Block theBlock;
+    BlockIO::readBlock(0,theBlock);
+    anEntityId = theBlock.header.theEntityId;
+    std::stringstream theStream;
+    theStream.write(theBlock.payload,kPayloadSize);
+    std::string theInfo; // first one will be EntityMap:
+   // theStream>>theInfo>>theInfo;
+    theStream>>theInfo;
+    while(theStream>>theInfo){
+        if(theInfo=="END" || theInfo == "\0"){
+            break;
+        }
+        uint32_t val;
+        std::string key;
+        theStream>>key>>val>>theInfo;  // Encoding format is # key val #
+        anIdxMap[key]=val;
+
+    }
+
+    
+    return StatusResult(Errors::noError);
+
 }
 
 }  // namespace ECE141
