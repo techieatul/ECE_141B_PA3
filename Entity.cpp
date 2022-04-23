@@ -14,6 +14,7 @@
 #include "Entity.hpp"
 #include "BlockIO.hpp"
 #include <sstream>
+#include <unordered_set>
 
 
 namespace ECE141 {
@@ -59,7 +60,7 @@ namespace ECE141 {
   }
 
   Block Entity::getBlock(){
-    // Create a block
+    // Create a block and encode the entity info
     Block theBlock(BlockType::entity_block);
     theBlock.header.type='E';
     strcpy(theBlock.header.theTitle,this->getName().c_str());
@@ -91,6 +92,20 @@ namespace ECE141 {
     }
 
     return StatusResult(Errors::noError);
+  }
+
+  bool Entity::checkDuplicateAttr(){
+
+    std::unordered_set<std::string> theAttrFieldSet;
+    for(auto it: this->getAttributes()){
+      theAttrFieldSet.insert(it.getName());
+    }
+    if(theAttrFieldSet.size()!=this->getAttributes().size()){
+      return true;
+    }
+
+    return false;
+
   }
 
 

@@ -16,6 +16,10 @@
 #include "keywords.hpp"
 #include "SQLStatement.hpp"
 #include "MessageViewer.hpp"
+#include "CreateTableStatement.hpp"
+#include "DropTableStatement.hpp"
+#include "ShowTableStatement.hpp"
+#include "DescribeTableStatement.hpp"
 
 namespace ECE141 {
 
@@ -43,6 +47,7 @@ namespace ECE141 {
     StatusResult  describeTable(const std::string &aName);
     StatusResult  dropTable(const std::string &aName);
     StatusResult  showTables();
+    Statement*    handleSqlStatements(Tokenizer &aTokenizer);
 
   protected:
   Database** currentActiveDbPtr;

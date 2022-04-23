@@ -44,6 +44,7 @@ namespace ECE141 {
     StatusResult          decode(std::istream &anInput);
     Block                 getBlock();
     StatusResult          decodeBlock(Block& aBlock);
+    bool                  checkDuplicateAttr();
   protected:
         
     AttributeList   attributes;

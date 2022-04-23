@@ -13,6 +13,7 @@
 #include "Database.hpp"
 #include "Config.hpp"
 #include <sstream>
+#include <unordered_set>
 namespace ECE141 {
 
 
@@ -162,7 +163,7 @@ namespace ECE141 {
     return nullptr;
   }
 
-  
+// No longer used. See makeStatement for further comments  
   void handleSQL(Tokenizer &aTokenizer, SQLStatement** aSQLStatement) {
     switch ((*aSQLStatement)->getType()) {
         case Keywords::create_kw:
@@ -191,34 +192,78 @@ namespace ECE141 {
 
   Statement* SQLProcessor::makeStatement(Tokenizer &aTokenizer,
                                        StatusResult &aResult) {
-
-    SQLStatement *theSQLStatement = new SQLStatement(SQLProcessor::keywordStatement);
-    handleSQL(aTokenizer, &theSQLStatement);
+     // Atul: Added separate class to create statements for create_table,show_table,drop_table, and describe_table
+     // This is handled in handleSqlStatements
+    // SQLStatement *theSQLStatement = new SQLStatement(SQLProcessor::keywordStatement);
+    // handleSQL(aTokenizer, &theSQLStatement);
+    
+    Statement *theSQLStatement = SQLProcessor::handleSqlStatements(aTokenizer);
     SQLProcessor::keywordStatement = Keywords::unknown_kw; //resetting for the next command
+
+    // Go to end of the command
+    aTokenizer.skipTo(';');
+    aTokenizer.next();
     return theSQLStatement;
   }
 
-  // Override run function to run for SQL Statement
-  // StatusResult SQLProcessor::run(Statement *aStmt){
-  //   SQLStatement *theStatement = dynamic_cast<SQLStatement*>(aStmt);
-  //   theStatement->
-  //   std::cout<<"I am called"<<std::endl;
-  //   return StatusResult(Errors::noError);
-  // }
+
+   Statement* SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer){
+     switch(aTokenizer.current().keyword){
+           case Keywords::create_kw:{
+            CreateTableStatement* theCreateTable = new CreateTableStatement(Keywords::create_kw);
+            aTokenizer.skipTo(TokenType::identifier); // Skip to table name
+            theCreateTable->setTableName(aTokenizer.current().data);
+            theCreateTable->createTableStatement(aTokenizer);
+            return theCreateTable;
+           }
+           
+           case Keywords::show_kw:{
+            ShowTableStatement* theShowTable = new ShowTableStatement(Keywords::show_kw);
+            //theShowTable->setTableName(aTokenizer.current().data);
+            return theShowTable;
+           }
+           case Keywords::describe_kw:{
+             DescribeTableStatement* theDescribeTable = new DescribeTableStatement(Keywords::describe_kw);
+             aTokenizer.skipTo(TokenType::identifier);
+             theDescribeTable->setTableName(aTokenizer.current().data);
+             
+             return theDescribeTable;
+           }
+           case Keywords::drop_kw:{
+             DropTableStatement* theDropTable = new DropTableStatement(Keywords::drop_kw);
+             aTokenizer.skipTo(TokenType::identifier);
+             theDropTable->setTableName(aTokenizer.current().data);
+             return theDropTable;
+           }
+            
+  
+
+       }
+       
+
+    }
+  
   StatusResult  SQLProcessor::run(Statement *aStmt) {
     // running which command to run
     SQLStatement *theStatement = dynamic_cast<SQLStatement*>(aStmt);
+    StatusResult theStatus(Errors::noError);
     switch (theStatement->getType()){
       
       case Keywords::create_kw:{
         
         std::string theTableName = theStatement->getTableName();
+
+        // 
+
         Entity* theEntity = new Entity(theStatement->getTableName());
         std::vector<Attribute> theAttr = theStatement->getAttributevector();
+
+        
+
         for(size_t i = 0; i<theAttr.size();i++){
           theEntity->addAttribute(theAttr.at(i));
         }
-        StatusResult theStatus = createTable(theEntity);
+        theStatus = createTable(theEntity);
         if(theStatus){
           uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount()-1;
           (*currentActiveDbPtr)->setEntityMap(theTableName,theBlockNum);
@@ -231,18 +276,18 @@ namespace ECE141 {
       }
       
       case Keywords::show_kw:
-      showTables();
-      break;
+         theStatus = showTables();
+         break;
 
       case Keywords::drop_kw:
-      dropTable(theStatement->getTableName());
+      theStatus = dropTable(theStatement->getTableName());
       break;
 
       case Keywords::describe_kw:
-      describeTable(theStatement->getTableName());
+      theStatus = describeTable(theStatement->getTableName());
       break;
     }
-    return StatusResult{};
+    return theStatus;
   }
 
 
@@ -258,6 +303,24 @@ namespace ECE141 {
     if(*currentActiveDbPtr == nullptr){
       return StatusResult(Errors::noDatabaseSpecified);
     }
+
+
+    // Checking if the table already exists
+    bool theEntityExists = (*currentActiveDbPtr)->checkEntityInMap(anEntity->getName());
+    if(theEntityExists){
+      return StatusResult(Errors::tableExists);
+    }
+    // Check if duplicate attributes 
+    
+    bool theDuplicateAttrCheck = anEntity->checkDuplicateAttr();
+    if(theDuplicateAttrCheck){
+      return StatusResult(Errors::attributeExists);
+    }
+
+
+
+
+    // This part of code handles the blockifying the entity
     Block theConvertedBlock = anEntity->getBlock();
     uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
     (*currentActiveDbPtr)->getStorage().writeBlock(theBlockNum,theConvertedBlock);
@@ -330,7 +393,7 @@ namespace ECE141 {
     //std::string theMsg = std::string(theMessage.str());
     //SQLProcessor::SQLMessageHandler.setMessage(theMsg);
     //SQLProcessor::SQLMessageHandler.show(output);
-    return StatusResult{};
+    return StatusResult(Errors::noError);
   }
 
 }

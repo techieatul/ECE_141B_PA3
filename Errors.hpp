@@ -40,6 +40,7 @@ namespace ECE141 {
     databaseExists = 340,
     databaseCreationError = 350,
     primaryKeyRequired = 360,
+    attributeExists = 370,
     
     //type related...
     unknownType=400,
