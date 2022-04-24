@@ -14,6 +14,7 @@
 #include <optional>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "Attribute.hpp"
 #include "Errors.hpp"
@@ -24,7 +25,7 @@ namespace ECE141 {
   
   using AttributeOpt = std::optional<Attribute>;
   using AttributeList = std::vector<Attribute>;
-
+  using DataRows      = std::unordered_set<uint32_t>;
   //------------------------------------------------
 
   class Entity {
@@ -49,12 +50,18 @@ namespace ECE141 {
     uint32_t              getAutoIncr(){return autoincr;}
     void                  setBlockId(uint32_t &aNum){theBlockId = aNum;}
     uint32_t              getBlockId(){return theBlockId;}
+    DataRows&             getDataRows(){return theDataBlockNums;}
+    void                  insertDataRow(uint32_t &aNum){theDataBlockNums.insert(aNum);}
+
   protected:
         
     AttributeList   attributes;
     std::string     name;
     uint32_t        autoincr;  //auto_increment
     uint32_t        theBlockId;
+    DataRows        theDataBlockNums;
+    
+
   };
   
 }

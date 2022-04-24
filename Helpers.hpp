@@ -12,6 +12,7 @@
 #include "BasicTypes.hpp"
 #include "keywords.hpp"
 #include <algorithm>
+#include <sstream>
 
 namespace ECE141 {
 
@@ -221,6 +222,35 @@ namespace ECE141 {
       }
       return false;
     }
+
+    static uint32_t convertStrToUnint32_t(std::string &aStr){
+      std::stringstream ss;
+      ss<<aStr;
+      uint32_t theNum;
+      ss>>theNum;
+      return theNum;
+    }
+    
+    static bool convertStrToBool(std::string &aStr){
+      return aStr=="1"?true:false;
+    }
+
+    static int convertStrToInt(std::string &aStr){
+      std::stringstream ss;
+      ss<<aStr;
+      int theNum;
+      ss>>theNum;
+      return theNum;
+    }
+
+    static double convertStrToDouble(std::string &aStr){
+      std::stringstream ss;
+      ss<<aStr;
+      double theNum;
+      ss>>theNum;
+      return theNum;
+    }
+
 
   };
   

@@ -36,7 +36,8 @@ Database::Database(const std::string aName, CreateDB)
     //strcpy(theMetaBlock->payload,theDBName.c_str()); // Copy the DB name  to payload char array
 
     // Make the entity_id 1
-    this->setEntityId(1);
+    uint32_t theNewId = 1;
+    this->setEntityId(theNewId);
 
     StatusResult theCreateResult = storage.writeBlock(0, theMetaBlock);
 

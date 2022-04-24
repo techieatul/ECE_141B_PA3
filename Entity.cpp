@@ -15,6 +15,7 @@
 #include "BlockIO.hpp"
 #include <sstream>
 #include <unordered_set>
+#include "Helpers.hpp"
 
 
 namespace ECE141 {
@@ -73,12 +74,20 @@ namespace ECE141 {
       theAttr[i].encode(theStream);
       theStream<<"\n";
     }
+    // To add code for encoding Row numbers belonging to this entity
+
+    DataRows theRows = this->getDataRows();
+    theStream<<"Data:" <<" ";
+    for(auto itr: theRows){
+       theStream<<itr<<" ";
+    }
+    theStream<<"END_Data"<<" ";
 
     theStream.read(theBlock.payload,ECE141::kPayloadSize);
     return theBlock;
     
   }
-
+  // To decode the Entity Block
   StatusResult Entity::decodeBlock(Block& aBlock){
     int theAttrNum = 0;
     std::string theAttr;
@@ -91,7 +100,24 @@ namespace ECE141 {
       theAttribute.decode(theStream);
       this->addAttribute(theAttribute);
     }
-    
+    // Decode Data Rows and populate theDataBlockNums
+
+    theStream>>theAttr; // theAttr will have Data:
+    while(theStream>>theAttr){
+      if(theAttr=="END_DATA" || theAttr=="\0"){
+        break;
+      }
+      uint32_t theNum = Helpers::convertStrToUnint32_t(theAttr);
+      this->insertDataRow(theNum);
+    }
+
+    // Store blockId and EntityId
+    uint32_t theEntityId = aBlock.header.theBlockId;
+    uint32_t theAutoIncrId = aBlock.header.theEntityId;
+
+    this->setBlockId(theEntityId);
+    this->setAutoIncr(theAutoIncrId);
+
     return StatusResult(Errors::noError);
   }
 

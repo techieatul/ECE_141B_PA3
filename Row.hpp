@@ -41,6 +41,9 @@ namespace ECE141 {
     KeyValues&          getData() {return data;}
     
     uint32_t            entityId; //hash value of entity?
+    void              getBlock(Block &aBlock);
+    void              encode(Block &aBlock);
+    void              decode(Block &aBlock);
     //uint32_t            blockNumber;
 
   protected:

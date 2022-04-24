@@ -86,7 +86,7 @@ namespace ECE141 {
     anOutput<<" Attribute_Info:"<<" "
             << this->name <<" "<< char(int(type)) <<" "
             << this->size <<" "<< this->autoIncrement <<" "
-            << this->primary <<" "<< this->nullable <<" END ";
+            << this->primary <<" "<< this->nullable <<" "<<"END";
             return StatusResult(Errors::noError);
 
   }

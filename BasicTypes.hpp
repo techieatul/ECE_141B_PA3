@@ -4,7 +4,7 @@
 //
 //  Created by rick gessner on 3/9/21.
 //
-
+#pragma once
 #ifndef BasicTypes_h
 #define BasicTypes_h
 
@@ -25,6 +25,8 @@ namespace ECE141 {
   using IntOpt    = std::optional<uint32_t>;
   using Value = std::variant<bool, int, double, std::string>;
   using KeyValues = std::map<const std::string, Value>;
+  
+
 
 }
 #endif /* BasicTypes_h */
