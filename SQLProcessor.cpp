@@ -287,29 +287,41 @@ namespace ECE141 {
         break;
       }
       
-      case Keywords::show_kw:
+      case Keywords::show_kw:{
          theStatus = showTables();
          break;
+      }
 
-      case Keywords::drop_kw:
+      case Keywords::drop_kw:{
       theStatus = dropTable(theStatement->getTableName());
       break;
+      }
 
-      case Keywords::describe_kw:
+      case Keywords::describe_kw:{
       theStatus = describeTable(theStatement->getTableName());
       break;
+      }
+      // Atul
+      // Implement the run for insert_kw
+      case Keywords::insert_kw:{
+      theStatus = insertTable(theStatement->getTableName());
+      break;
+      }
+
+
     }
 
-    // Atul
-    // Implement the run for insert_kw
+    
 
     return theStatus;
 
 
   }
 
+  // To handle INSERT INTO statement
+  StatusResult SQLProcessor::insertTable(const std::string &aName){
 
-
+  }
 
 
   StatusResult  SQLProcessor::createTable(Entity *anEntity){

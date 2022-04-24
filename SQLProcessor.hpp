@@ -20,6 +20,7 @@
 #include "DropTableStatement.hpp"
 #include "ShowTableStatement.hpp"
 #include "DescribeTableStatement.hpp"
+#include "Row.hpp"
 
 namespace ECE141 {
 
@@ -27,7 +28,7 @@ namespace ECE141 {
   class DBProcessor; //define this later...
   class Entity;
   class Database;
-
+  using RowVectors = std::vector<Row>;
   //Should this processor have it's own Statement types?
 
   class SQLProcessor : public CmdProcessor {
@@ -46,6 +47,7 @@ namespace ECE141 {
     StatusResult  createTable(Entity *anEntity);
     StatusResult  describeTable(const std::string &aName);
     StatusResult  dropTable(const std::string &aName);
+     StatusResult insertTable(const std::string &aName);
     StatusResult  showTables();
     Statement*    handleSqlStatements(Tokenizer &aTokenizer);
 
@@ -53,6 +55,8 @@ namespace ECE141 {
   Database** currentActiveDbPtr;
   Keywords keywordStatement;
   MessageViewer SQLMessageHandler;
+  RowVectors    theRowData;
+
 
     //do you need other data members?
   };
