@@ -375,7 +375,50 @@ StatusResult SQLProcessor::run(Statement *aStmt) {
 }
 
 // To handle INSERT INTO statement
-StatusResult SQLProcessor::insertTable(const std::string &aName) {}
+StatusResult SQLProcessor::insertTable(const std::string &aName) {
+    // What all needs to be done?
+    // 1) Get the entity block num from idx_map
+    // 2) Read the block and decode
+    // 3) Go through RowVectors and do the logic
+    // 4) Encode the entity back
+
+    Entity  *theEntity = new Entity(aName);
+    Block   *theDescribeBlock = new Block(BlockType::entity_block);
+    uint32_t theBlockNum = (*currentActiveDbPtr)->getEntityFromMap(aName);
+    uint32_t theBlockCount = (*currentActiveDbPtr)->getBlockCount();
+    (*currentActiveDbPtr)
+        ->getStorage()
+        .readBlock(theBlockNum, *theDescribeBlock);
+    theEntity->decodeBlock(*theDescribeBlock);
+    delete theDescribeBlock;
+    for (size_t i = 0; i < this->theRowData.size(); i++) {
+        // blockify each row. The getBlock function in Row.cpp
+
+        Block   *theRowBlock = new Block(BlockType::data_block);
+        uint32_t theRowId = theEntity->getAutoIncr();
+        theRowBlock->header.theBlockId = theRowId;
+        this->theRowData.at(i).getBlock(*theRowBlock);
+        (*currentActiveDbPtr)
+            ->getStorage()
+            .writeBlock(
+                theBlockCount,
+                *theRowBlock);  // Should it be blockCount-1?? Check later
+
+        theEntity->insertDataRow(theBlockCount);
+        theRowId++;
+        theEntity->setAutoIncr(theRowId);
+        // update blockCount
+        theBlockCount++;
+        (*currentActiveDbPtr)->setBlockCount(theBlockCount);
+
+        delete theRowBlock;
+    }
+    // Encode the entity block back
+    Block theEntityBlock = theEntity->getBlock();
+    (*currentActiveDbPtr)->getStorage().writeBlock(theBlockNum, theEntityBlock);
+
+    delete theEntity;
+}
 
 StatusResult SQLProcessor::createTable(Entity *anEntity) {
     // creating the table
@@ -438,11 +481,12 @@ StatusResult SQLProcessor::describeTable(const std::string &aName) {
         Entity *theEntity = new Entity(aName);
         theEntity->decodeBlock(theDescribeBlock);
 
-        uint32_t theEntityId = theDescribeBlock.header.theBlockId;
-        uint32_t theAutoIncrId = theDescribeBlock.header.theEntityId;
+        // Atul: Moved the below lines to decodeBlock. It makes more sense there
+        // uint32_t theEntityId = theDescribeBlock.header.theBlockId;
+        // uint32_t theAutoIncrId = theDescribeBlock.header.theEntityId;
 
-        theEntity->setBlockId(theEntityId);
-        theEntity->setAutoIncr(theAutoIncrId);
+        // theEntity->setBlockId(theEntityId);
+        // theEntity->setAutoIncr(theAutoIncrId);
 
         SQLMessageHandler.printAttrTable(output, theEntity->getAttributes());
         output << theEntity->getAttributes().size() << " rows in set ("
