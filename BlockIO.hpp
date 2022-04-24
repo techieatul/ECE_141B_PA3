@@ -45,9 +45,13 @@ struct BlockHeader {
     }
 
     char type;  // char version of block type
-    uint32_t theBlockId;
+    uint32_t theBlockId;   // This is to store 0 for metablock, Id for entities, auto_incr value for data blocks
     char theTitle[20];
-    uint32_t theEntityId;
+    uint32_t theEntityId;   // This is to store current auto_incr value of an entity, 
+                            //and current hightest entity id value to be stored in metablock
+                            // to store which entity the Data block ti belong to..
+                            
+
 };
 
 const size_t kBlockSize = 1024;

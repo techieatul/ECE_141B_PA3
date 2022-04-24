@@ -45,11 +45,16 @@ namespace ECE141 {
     Block                 getBlock();
     StatusResult          decodeBlock(Block& aBlock);
     bool                  checkDuplicateAttr();
+    void                  setAutoIncr(uint32_t &aNum){autoincr = aNum;}
+    uint32_t              getAutoIncr(){return autoincr;}
+    void                  setBlockId(uint32_t &aNum){theBlockId = aNum;}
+    uint32_t              getBlockId(){return theBlockId;}
   protected:
         
     AttributeList   attributes;
     std::string     name;
     uint32_t        autoincr;  //auto_increment
+    uint32_t        theBlockId;
   };
   
 }

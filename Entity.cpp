@@ -64,6 +64,7 @@ namespace ECE141 {
     Block theBlock(BlockType::entity_block);
     theBlock.header.type='E';
     strcpy(theBlock.header.theTitle,this->getName().c_str());
+    
     std::stringstream theStream;
     theStream << "Attr_num "<<this->attributes.size()<<" \n ";
     
@@ -90,7 +91,7 @@ namespace ECE141 {
       theAttribute.decode(theStream);
       this->addAttribute(theAttribute);
     }
-
+    
     return StatusResult(Errors::noError);
   }
 

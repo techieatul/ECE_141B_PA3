@@ -404,6 +404,7 @@ bool DBProcessor::dbExists(const std::string &aDBName) {
 StatusResult DBProcessor::createDatabase(const std::string &aName) {
             delete (*currentActiveDbPtr);
 			(*currentActiveDbPtr) = new Database(aName, CreateDB{});
+            
             //###################################### 
             //Below lines giving error.. Why??
             // char* theMesage = "Query OK, 1 row affected";

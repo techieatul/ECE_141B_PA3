@@ -83,7 +83,7 @@ StatusResult Storage::decodeMetaBlock(std::map<std::string,uint32_t>& anIdxMap, 
     BlockIO::readBlock(0,theBlock);
     anEntityId = theBlock.header.theEntityId;
     std::stringstream theStream;
-    theStream.write(theBlock.payload,kPayloadSize);
+    theStream.write(theBlock.payload,kPayloadSize); // string stream -> read -> write 
     std::string theInfo; // first one will be EntityMap:
    // theStream>>theInfo>>theInfo;
     theStream>>theInfo;
@@ -98,7 +98,7 @@ StatusResult Storage::decodeMetaBlock(std::map<std::string,uint32_t>& anIdxMap, 
 
     }
 
-    
+    // Entity_Map: # Users 20 # #Payments 30# #Books 1 # END
     return StatusResult(Errors::noError);
 
 }

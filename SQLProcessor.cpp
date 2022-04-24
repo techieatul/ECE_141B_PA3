@@ -154,7 +154,11 @@ namespace ECE141 {
                 return this;
             }
             break;
-  
+
+        // Ya-chen
+        // to add for insert_kw and check for validity of the command
+        // Command should atleast have INSERT INTO <TABLE_NAME> (<Some fields>) VALUES (<Values>),(<Values>),(<Values>)...
+          
     }
 
 
@@ -235,7 +239,12 @@ namespace ECE141 {
              theDropTable->setTableName(aTokenizer.current().data);
              return theDropTable;
            }
-            
+           // Ya-chen
+          // To add insert_kw and do the parsing through some inserTableStatement
+          // Something like theInsertTable->insertTableStatement(aTokenizer);
+          // Have the insertTableStatement method in SQLStatement.hpp and .cpp
+          // Populate the Row Info.. You can have the vector<Rows> in SQLProcessor, to use it later
+          // while running the command
   
 
        }
@@ -256,6 +265,8 @@ namespace ECE141 {
         // 
 
         Entity* theEntity = new Entity(theStatement->getTableName());
+        uint32_t theCurrentEntityId = (*currentActiveDbPtr)->getEntityId();
+        theEntity->setBlockId(theCurrentEntityId);
         std::vector<Attribute> theAttr = theStatement->getAttributevector();
 
         
@@ -263,6 +274,7 @@ namespace ECE141 {
         for(size_t i = 0; i<theAttr.size();i++){
           theEntity->addAttribute(theAttr.at(i));
         }
+        
         theStatus = createTable(theEntity);
         if(theStatus){
           uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount()-1;
@@ -287,7 +299,13 @@ namespace ECE141 {
       theStatus = describeTable(theStatement->getTableName());
       break;
     }
+
+    // Atul
+    // Implement the run for insert_kw
+
     return theStatus;
+
+
   }
 
 
@@ -317,11 +335,18 @@ namespace ECE141 {
       return StatusResult(Errors::attributeExists);
     }
 
-
+    
 
 
     // This part of code handles the blockifying the entity
     Block theConvertedBlock = anEntity->getBlock();
+
+    // For entity theBlockId is the entity number in the database
+    theConvertedBlock.header.theBlockId = (*currentActiveDbPtr)->getEntityId();
+    // For entity theEntityId is the current value of the auto_incr field 
+
+    theConvertedBlock.header.theEntityId = anEntity->getAutoIncr();
+
     uint32_t theBlockNum = (*currentActiveDbPtr)->getBlockCount();
     (*currentActiveDbPtr)->getStorage().writeBlock(theBlockNum,theConvertedBlock);
     uint32_t theNewBlockCount = theBlockNum+1; // new block count will old + 1
@@ -340,10 +365,18 @@ namespace ECE141 {
     uint32_t theBlockNum =  (*currentActiveDbPtr)->getEntityFromMap(aName);
    // (*currentActiveDbPtr)->getStorage().getTableByName(theBlockNum,aName,theDescribeBlock);
     (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum,theDescribeBlock);
+
     if(theDescribeBlock.header.theTitle==aName){
       // decode the block
       Entity* theEntity = new Entity(aName);
       theEntity->decodeBlock(theDescribeBlock);
+
+      uint32_t theEntityId = theDescribeBlock.header.theBlockId;
+      uint32_t theAutoIncrId = theDescribeBlock.header.theEntityId;
+
+      theEntity->setBlockId(theEntityId);
+      theEntity->setAutoIncr(theAutoIncrId);
+
       SQLMessageHandler.printAttrTable(output,theEntity->getAttributes());
       output<<theEntity->getAttributes().size()<<" rows in set ("<<Config::getTimer().elapsed()<<" sec.)"<<std::endl;
       delete theEntity;

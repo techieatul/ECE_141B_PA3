@@ -29,11 +29,15 @@ Database::Database(const std::string aName, CreateDB)
     Block theMetaBlock(BlockType::meta_block);
     theMetaBlock.header.theBlockId = 0;
     theMetaBlock.header.type = 'M';
-    theMetaBlock.header.theEntityId = 0;
+    theMetaBlock.header.theEntityId = this->entity_id;
     strcpy(theMetaBlock.header.theTitle,this->name.c_str());
     //std::string theDBName = "Name:" + this->name;
     
     //strcpy(theMetaBlock->payload,theDBName.c_str()); // Copy the DB name  to payload char array
+
+    // Make the entity_id 1
+    this->setEntityId(1);
+
     StatusResult theCreateResult = storage.writeBlock(0, theMetaBlock);
 
     // Increase the block count
