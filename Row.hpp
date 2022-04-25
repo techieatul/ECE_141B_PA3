@@ -46,15 +46,6 @@ class Row {
     void       decode(Block &aBlock);
     // uint32_t            blockNumber;
 
-    // STUDENT: What other methods do you require?
-
-    Row       &set(const std::string &aKey, const Value &aValue);
-
-    KeyValues &getData() { return data; }
-
-    uint32_t   entityId;  // hash value of entity?
-                          // uint32_t            blockNumber;
-
    protected:
     KeyValues data;
     int32_t   blockNumber;

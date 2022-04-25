@@ -314,16 +314,16 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
             Block    theDescribeBlock;
             uint32_t theBlockNum = (*currentActiveDbPtr)->getEntityFromMap(aTokenizer.current().data);
             (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum, theDescribeBlock);
-            InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, theRowData);
-            Entity               *theEntity;
+            Entity *theEntity;
 
             if (theDescribeBlock.header.theTitle == aTokenizer.current().data) {
                 theEntity = new Entity(aTokenizer.current().data);
                 theEntity->decodeBlock(theDescribeBlock);
             }
+            InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, &theRowData, theEntity);
 
             theInsertTable->setTableName(aTokenizer.current().data);
-            theInsertTable->theEntity = theEntity;
+            // theInsertTable->theEntity = theEntity;
             theInsertTable->insertTableStatement(aTokenizer);
             return theInsertTable;
         }
