@@ -1,17 +1,20 @@
 #include "SQLStatement.hpp"
 
+#include "Database.hpp"
+#include "Entity.hpp"
 #include "Tokenizer.hpp"
 
 namespace ECE141 {
 SQLStatement::SQLStatement(Keywords aStatementType)
     : Statement(aStatementType) {}
-void SQLStatement::setTableName(std::string& aName) {
+
+void SQLStatement::setTableName(std::string &aName) {
     SQLStatement::theTableName = aName;
 }
 
 std::string SQLStatement::getTableName() { return SQLStatement::theTableName; }
 
-bool        SQLStatement::createTableStatement(Tokenizer& aTokenizer) {
+bool        SQLStatement::createTableStatement(Tokenizer &aTokenizer) {
     aTokenizer.skipTo('(');
     Attribute theAttr;
     bool      theNot = false;
@@ -77,6 +80,34 @@ bool        SQLStatement::createTableStatement(Tokenizer& aTokenizer) {
 
     return true;
 }
-
-bool SQLStatement::insertTableStatement(Tokenizer& aTokenizer) {}
+bool SQLStatement::parseIdentifierList(StringList &aList,
+                                       Tokenizer  &aTokenizer) {
+    while (aTokenizer.more()) {
+        Token &theToken = aTokenizer.current();
+        if (TokenType::identifier == aTokenizer.current().type) {
+            aList.push_back(theToken.data);
+            aTokenizer.next();  // skip identifier...
+            aTokenizer.skipIf(',');
+        } else if (aTokenizer.skipIf(')')) {
+            break;
+        } else
+            return false;
+    }
+    return true;
+}
+bool SQLStatement::parseValueList(StringList &aList, Tokenizer &aTokenizer) {
+    while (aTokenizer.more()) {
+        Token &theToken = aTokenizer.current();
+        if (TokenType::identifier == theToken.type ||
+            TokenType::number == theToken.type) {
+            aList.push_back(theToken.data);
+            aTokenizer.next();  // skip identifier...
+            aTokenizer.skipIf(',');
+        } else if (aTokenizer.skipIf(')')) {
+            break;
+        } else
+            return false;
+    }
+    return true;
+}
 }  // namespace ECE141

@@ -26,13 +26,13 @@ SQLProcessor::~SQLProcessor() {}
 
 bool checkCreateTable(Tokenizer aTokenizer) {
     // size_t theCurrIdx = aTokenizer.getIndex();
-    Token theCreateToken{TokenType::keyword, Keywords::create_kw,
+    Token              theCreateToken{TokenType::keyword, Keywords::create_kw,
                          Operators::unknown_op, "create"};
-    Token theTableToken{TokenType::keyword, Keywords::table_kw,
+    Token              theTableToken{TokenType::keyword, Keywords::table_kw,
                         Operators::unknown_op, "table"};
-    Token theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
+    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
                             Operators::unknown_op, "table_name"};
-    Token theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
+    Token              theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
                             Operators::unknown_op, "("};
 
     std::vector<Token> SQLVector;
@@ -65,11 +65,11 @@ bool checkCreateTable(Tokenizer aTokenizer) {
 }
 
 bool checkShowTable(Tokenizer aTokenizer) {
-    Token theShowToken{TokenType::keyword, Keywords::show_kw,
+    Token              theShowToken{TokenType::keyword, Keywords::show_kw,
                        Operators::unknown_op, "show"};
-    Token theTablesToken{TokenType::keyword, Keywords::tables_kw,
+    Token              theTablesToken{TokenType::keyword, Keywords::tables_kw,
                          Operators::unknown_op, "tables"};
-    Token theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
+    Token              theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
                             Operators::unknown_op, ";"};
 
     std::vector<Token> SQLVector;
@@ -89,13 +89,13 @@ bool checkShowTable(Tokenizer aTokenizer) {
 }
 
 bool checkDropTable(Tokenizer aTokenizer) {
-    Token theDropToken{TokenType::keyword, Keywords::drop_kw,
+    Token              theDropToken{TokenType::keyword, Keywords::drop_kw,
                        Operators::unknown_op, "drop"};
-    Token theTableToken{TokenType::keyword, Keywords::table_kw,
+    Token              theTableToken{TokenType::keyword, Keywords::table_kw,
                         Operators::unknown_op, "table"};
-    Token theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
+    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
                             Operators::unknown_op, "table_name"};
-    Token theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
+    Token              theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
                             Operators::unknown_op, ";"};
 
     std::vector<Token> SQLVector;
@@ -116,11 +116,11 @@ bool checkDropTable(Tokenizer aTokenizer) {
 }
 
 bool checkDescribeTable(Tokenizer aTokenizer) {
-    Token theDescribeToken{TokenType::keyword, Keywords::describe_kw,
+    Token              theDescribeToken{TokenType::keyword, Keywords::describe_kw,
                            Operators::unknown_op, "describe"};
-    Token theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
+    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
                             Operators::unknown_op, "table_name"};
-    Token theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
+    Token              theSemiColonToken{TokenType::punctuation, Keywords::unknown_kw,
                             Operators::unknown_op, ";"};
 
     std::vector<Token> SQLVector;
@@ -141,15 +141,15 @@ bool checkDescribeTable(Tokenizer aTokenizer) {
 
 // Ya-Chen done
 bool checkInsertTable(Tokenizer aTokenizer) {
-    Token theInsertToken{TokenType::keyword, Keywords::insert_kw,
+    Token              theInsertToken{TokenType::keyword, Keywords::insert_kw,
                          Operators::unknown_op, "insert"};
-    Token theIntoToken{TokenType::keyword, Keywords::into_kw,
+    Token              theIntoToken{TokenType::keyword, Keywords::into_kw,
                        Operators::unknown_op, "into"};
-    Token theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
+    Token              theTableNameToken{TokenType::identifier, Keywords::unknown_kw,
                             Operators::unknown_op, "table_name"};
-    Token theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
+    Token              theOpenParanToken{TokenType::punctuation, Keywords::unknown_kw,
                             Operators::unknown_op, "("};
-    Token theValuesToken{TokenType::keyword, Keywords::values_kw,
+    Token              theValuesToken{TokenType::keyword, Keywords::values_kw,
                          Operators::unknown_op, "values"};
 
     std::vector<Token> SQLVector;
@@ -299,6 +299,7 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
                 new DropTableStatement(Keywords::drop_kw);
             aTokenizer.skipTo(TokenType::identifier);
             theDropTable->setTableName(aTokenizer.current().data);
+
             return theDropTable;
         }
             // Ya-chen
@@ -309,11 +310,22 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
             // the Row Info.. You can have the vector<Rows> in SQLProcessor, to
             // use it later while running the command
         case Keywords::insert_kw: {
-            InsertTableStatement *theInsertTable =
-                new InsertTableStatement(Keywords::insert_kw);
             aTokenizer.skipTo(TokenType::identifier);
+            Block    theDescribeBlock;
+            uint32_t theBlockNum = (*currentActiveDbPtr)->getEntityFromMap(aTokenizer.current().data);
+            (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum, theDescribeBlock);
+            InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, theRowData);
+            Entity               *theEntity;
+
+            if (theDescribeBlock.header.theTitle == aTokenizer.current().data) {
+                theEntity = new Entity(aTokenizer.current().data);
+                theEntity->decodeBlock(theDescribeBlock);
+            }
+
             theInsertTable->setTableName(aTokenizer.current().data);
+            theInsertTable->theEntity = theEntity;
             theInsertTable->insertTableStatement(aTokenizer);
+            return theInsertTable;
         }
     }
 }
@@ -365,6 +377,8 @@ StatusResult SQLProcessor::run(Statement *aStmt) {
         }
         // Atul
         // Implement the run for insert_kw
+        // Yachen: I think you might need the whole statement to get the
+        // rowvector?
         case Keywords::insert_kw: {
             theStatus = insertTable(theStatement->getTableName());
             break;
@@ -425,8 +439,8 @@ StatusResult SQLProcessor::createTable(Entity *anEntity) {
     // Store the entity as a block
 
     // What all needed to store the entity??
-    // Need header and encode the attributes in char payload[], need to decode
-    // as well....
+    // Need header and encode the attributes in char payload[], need to
+    // decode as well....
     if (*currentActiveDbPtr == nullptr) {
         return StatusResult(Errors::noDatabaseSpecified);
     }
@@ -481,8 +495,8 @@ StatusResult SQLProcessor::describeTable(const std::string &aName) {
         Entity *theEntity = new Entity(aName);
         theEntity->decodeBlock(theDescribeBlock);
 
-        // Atul: Moved the below lines to decodeBlock. It makes more sense there
-        // uint32_t theEntityId = theDescribeBlock.header.theBlockId;
+        // Atul: Moved the below lines to decodeBlock. It makes more sense
+        // there uint32_t theEntityId = theDescribeBlock.header.theBlockId;
         // uint32_t theAutoIncrId = theDescribeBlock.header.theEntityId;
 
         // theEntity->setBlockId(theEntityId);

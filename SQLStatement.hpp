@@ -3,12 +3,13 @@
 #include <string>
 
 #include "Attribute.hpp"
+#include "SQLProcessor.hpp"
 #include "Statement.hpp"
 
 namespace ECE141 {
 class SQLStatement : public Statement {
    public:
-    SQLStatement(Keywords aStatementType = Keywords::unknown_kw);
+    SQLStatement(Keywords aStatementType);
     ~SQLStatement(){};
 
     void        setTableName(std::string &aName);
@@ -18,6 +19,8 @@ class SQLStatement : public Statement {
     bool        describeTableStatement(Tokenizer &aTokenizer);
     bool        dropTableStatement(Tokenizer &aTokenizer);
     bool        insertTableStatement(Tokenizer &aTokenizer);
+    bool        parseValueList(StringList &aList, Tokenizer &aTokenizer);
+    bool        parseIdentifierList(StringList &aList, Tokenizer &aTokenizer);
     bool        vectorPush(Attribute anAttr) {
         theTableAttributes.push_back(anAttr);
         return true;

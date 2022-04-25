@@ -26,7 +26,7 @@ class Row {
    public:
     Row(uint32_t entityId = 0);
     Row(const Row &aRow);
-
+    Row(KeyValues &aKeyValueList);
     // Row(const Attribute &anAttribute); //maybe?
 
     ~Row();
@@ -57,6 +57,7 @@ class Row {
 
    protected:
     KeyValues data;
+    int32_t   blockNumber;
 };
 
 //-------------------------------------------
