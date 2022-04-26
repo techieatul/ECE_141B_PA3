@@ -6,14 +6,14 @@
     "configurations": [
       {
         "name": "clang++ build active file",
-        "type": "cppdbg",
+        "type": "lldb",
         "request": "launch",
         "program": "${workspaceFolder}/pa3",
-        "args": ["Tables"],
-        "stopAtEntry": true,
+        "args": ["Insert"],
+        "stopAtEntry": false,
         "cwd": "${workspaceFolder}",
         "environment": [],
-        "externalConsole": true,
+        "externalConsole": false,
         "MIMode": "lldb",
         "preLaunchTask": "clang++ build active file"
       }

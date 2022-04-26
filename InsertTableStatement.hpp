@@ -13,7 +13,7 @@ namespace ECE141 {
 using RowVectors = std::vector<Row>;
 class InsertTableStatement : public SQLStatement {
    public:
-    InsertTableStatement(Keywords aStatementType, RowVectors *aRowVector, Entity *anEntity)
+    InsertTableStatement(Keywords aStatementType, RowVectors &aRowVector, Entity *anEntity)
         : SQLStatement::SQLStatement(aStatementType), rows(aRowVector), entity(anEntity) {}
     ~InsertTableStatement(){};
 
@@ -24,8 +24,8 @@ class InsertTableStatement : public SQLStatement {
                                 StringList &aFields);
 
    protected:
-    Entity     *entity;
-    RowVectors *rows;
+    Entity    *entity;
+    RowVectors rows;
 };
 
 }  // namespace ECE141

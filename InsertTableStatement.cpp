@@ -4,27 +4,21 @@
 namespace ECE141 {
 
 bool InsertTableStatement::insertTableStatement(Tokenizer &aTokenizer) {
-    if (2 < aTokenizer.remaining()) {
-        Token &theToken = aTokenizer.peek(1);
-        if (Keywords::into_kw == theToken.keyword) {
-            theToken = aTokenizer.peek(2);
-            if (TokenType::identifier == theToken.type) {
-                aTokenizer.next(3);
-                StringList theFields;
-                if (aTokenizer.skipIf('(')) {
-                    parseIdentifierList(theFields, aTokenizer);
-                    if (0 == theFields.size()) return false;
-                }
-
-                if (aTokenizer.skipIf(Keywords::values_kw)) {
-                    if (!makeRowsFromValueLists(aTokenizer, theFields)) {
-                        return false;
-                    }
-                    return true;
-                } else
-                    return false;
-            }
+    if (2 < aTokenizer.remaining()) {  // now token: table name
+        aTokenizer.next();
+        StringList theFields;
+        if (aTokenizer.skipIf('(')) {
+            parseIdentifierList(theFields, aTokenizer);
+            if (0 == theFields.size()) return false;
         }
+
+        if (aTokenizer.skipIf(Keywords::values_kw)) {
+            if (!makeRowsFromValueLists(aTokenizer, theFields)) {
+                return false;
+            }
+            return true;
+        } else
+            return false;
     }
 }
 
@@ -45,7 +39,9 @@ bool InsertTableStatement::createRow(InsertTableStatement               &aStatem
     }
 
     Row theRow(theData);
-    rows->push_back(theRow);
+    std::cout << "size " << theRow.getData().size() << "\n";
+    aStatement.rows.push_back(theRow);
+    std::cout << "size " << aStatement.rows[0].getData().size() << "\n";
 
     return true;
 }
