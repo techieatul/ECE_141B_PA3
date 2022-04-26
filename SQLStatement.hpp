@@ -3,7 +3,6 @@
 #include <string>
 
 #include "Attribute.hpp"
-#include "SQLProcessor.hpp"
 #include "Statement.hpp"
 
 namespace ECE141 {
