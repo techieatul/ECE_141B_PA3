@@ -315,7 +315,6 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
             uint32_t theBlockNum = (*currentActiveDbPtr)->getEntityFromMap(aTokenizer.current().data);
             (*currentActiveDbPtr)->getStorage().readBlock(theBlockNum, theDescribeBlock);
             Entity *theEntity;
-
             if (theDescribeBlock.header.theTitle == aTokenizer.current().data) {
                 theEntity = new Entity(aTokenizer.current().data);
                 theEntity->decodeBlock(theDescribeBlock);
@@ -325,6 +324,7 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
             theInsertTable->setTableName(aTokenizer.current().data);
             // theInsertTable->theEntity = theEntity;
             theInsertTable->insertTableStatement(aTokenizer);
+            delete theEntity;
             return theInsertTable;
         }
     }
