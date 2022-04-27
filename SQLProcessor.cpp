@@ -412,11 +412,7 @@ StatusResult SQLProcessor::insertTable(const std::string &aName) {
         uint32_t theRowId = theEntity->getAutoIncr();
         theRowBlock->header.theBlockId = theRowId;
         this->theRowData.at(i).getBlock(*theRowBlock);
-        (*currentActiveDbPtr)
-            ->getStorage()
-            .writeBlock(
-                theBlockCount,
-                *theRowBlock);  // Should it be blockCount-1?? Check later
+        (*currentActiveDbPtr)->getStorage().writeBlock(theBlockCount, *theRowBlock);  // Should it be blockCount-1?? Check later
 
         theEntity->insertDataRow(theBlockCount);
         theRowId++;

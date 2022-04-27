@@ -1,5 +1,7 @@
 #include "SQLStatement.hpp"
 
+#include <sstream>
+
 #include "Database.hpp"
 #include "Entity.hpp"
 #include "Tokenizer.hpp"
@@ -100,7 +102,17 @@ bool SQLStatement::parseValueList(StringList &aList, Tokenizer &aTokenizer) {
         Token &theToken = aTokenizer.current();
         if (TokenType::identifier == theToken.type ||
             TokenType::number == theToken.type) {
-            aList.push_back(theToken.data);
+            std::stringstream ss;
+            std::string       theData = aTokenizer.current().data;
+            for (int i = 0; i < theData.length(); i++) {
+                if (theData.at(i) != ',') {
+                    ss << theData.at(i);
+                }
+            }
+
+            theData = ss.str();
+            aList.push_back(theData);
+
             aTokenizer.next();  // skip identifier...
             aTokenizer.skipIf(',');
         } else if (aTokenizer.skipIf(')')) {
@@ -110,4 +122,5 @@ bool SQLStatement::parseValueList(StringList &aList, Tokenizer &aTokenizer) {
     }
     return true;
 }
+
 }  // namespace ECE141

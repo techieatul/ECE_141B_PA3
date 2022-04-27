@@ -1,6 +1,8 @@
 #pragma once
 #include "InsertTableStatement.hpp"
 
+#include "Helpers.hpp"
+
 namespace ECE141 {
 
 bool InsertTableStatement::insertTableStatement(Tokenizer &aTokenizer) {
@@ -29,9 +31,18 @@ bool InsertTableStatement::createRow(InsertTableStatement               &aStatem
     const AttributeList &theAttributes = entity->getAttributes();
     for (auto &theAttr : theAttributes) {
         const std::string &theName = theAttr.getName();
+
         Value              theValue("NULL");
         if (aKVList.count(theName)) {
-            theValue = aKVList[theName];
+            if (theAttr.getType() == DataTypes::int_type) {
+                theValue = Helpers::convertStrToInt(aKVList[theName]);
+            } else if (theAttr.getType() == DataTypes::bool_type) {
+                theValue = Helpers::convertStrToBool(aKVList[theName]);
+            } else if (theAttr.getType() == DataTypes::float_type) {
+                theValue = Helpers::convertStrToDouble(aKVList[theName]);
+            } else {
+                theValue = aKVList[theName];
+            }
         }
 
         theData[theName] = theValue;
