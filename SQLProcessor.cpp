@@ -320,7 +320,7 @@ Statement *SQLProcessor::handleSqlStatements(Tokenizer &aTokenizer) {
                 theEntity = new Entity(aTokenizer.current().data);
                 theEntity->decodeBlock(theDescribeBlock);
             }
-            InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, theRowData, theEntity);
+            InsertTableStatement *theInsertTable = new InsertTableStatement(Keywords::insert_kw, &theRowData, theEntity);
 
             theInsertTable->setTableName(aTokenizer.current().data);
             // theInsertTable->theEntity = theEntity;

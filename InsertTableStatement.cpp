@@ -39,9 +39,8 @@ bool InsertTableStatement::createRow(InsertTableStatement               &aStatem
     }
 
     Row theRow(theData);
-    std::cout << "size " << theRow.getData().size() << "\n";
-    aStatement.rows.push_back(theRow);
-    std::cout << "size " << aStatement.rows[0].getData().size() << "\n";
+    aStatement.rows->push_back(theRow);
+    // std::cout << "size " << aStatement.rows[0].getData().size() << "\n";
 
     return true;
 }

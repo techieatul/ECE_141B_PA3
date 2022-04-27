@@ -21,10 +21,13 @@
 
 namespace ECE141 {
 
-Row::Row(uint32_t entityId) {}
-Row::Row(const Row &aRow) { *this = aRow; }
-Row::Row(KeyValues &aKeyValueList) : blockNumber(0), data(aKeyValueList) {}
-Row::~Row() {}
+//
+Row::Row(const Row &aRow) : blockNumber(aRow.blockNumber), data(aRow.data) {
+    *this = aRow;
+    std::cout << "cre-row" << std::endl;
+}
+Row::Row(KeyValues aKeyValueList) : blockNumber(0), data(aKeyValueList) { std::cout << "create-row" << std::endl; }
+Row::~Row() { std::cout << "d-row" << std::endl; }
 
 Row &Row::operator=(const Row &aRow) { return *this; }
 bool Row::operator==(Row &aCopy) const { return false; }

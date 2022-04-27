@@ -24,9 +24,9 @@ namespace ECE141 {
 
 class Row {
    public:
-    Row(uint32_t entityId = 0);
+    // Row(uint32_t entityId = 0);
     Row(const Row &aRow);
-    Row(KeyValues &aKeyValueList);
+    Row(KeyValues aKeyValueList);
     // Row(const Attribute &anAttribute); //maybe?
 
     ~Row();

@@ -305,6 +305,8 @@ class TestAutomatic {
                         aResults.push_back({Commands::describe, theValue});
                         theSeq.clear().skipPast(')');
                     }
+                } else {
+                    theTokenizer.next();
                 }
             }
         }
